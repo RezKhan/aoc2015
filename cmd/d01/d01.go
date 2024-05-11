@@ -16,7 +16,7 @@ func partOne(lines []string) {
 				lineval--
 			}
 		}
-		fmt.Println(line, "=", lineval)
+		fmt.Println("=", lineval)
 	}
 }
 
@@ -31,7 +31,7 @@ func partTwo(lines []string) {
 				lineval--
 			}
 			if lineval == -1 {
-				fmt.Println(line[:i], "at", i+1)
+				fmt.Println("-1 at", i+1)
 				break
 			}
 		}
