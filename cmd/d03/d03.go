@@ -13,8 +13,8 @@ type House struct {
 
 func partOne(lines []string) {
 	var x, y int
-	var houses []House
 	for _, line := range lines {
+		var houses []House
 		x = 0
 		y = 0
 		house := House{x, y, 1}
@@ -51,8 +51,8 @@ func partOne(lines []string) {
 				houses = append(houses, house)
 			}
 		}
+		fmt.Println(len(houses))
 	}
-	fmt.Println(len(houses) + 1)
 }
 
 func main() {
