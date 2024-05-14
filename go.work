@@ -4,5 +4,6 @@ use (
 	./cmd/d01
 	./cmd/d02
 	./cmd/d03
+	./cmd/d04
 	./pkg/readfile
 )
