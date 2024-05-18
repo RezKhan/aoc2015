@@ -58,7 +58,6 @@ func tripCheck(line string) bool {
 	for i := 3; i < len(line); i++ {
 		chunk := line[i-3 : i]
 		if chunk[0] == chunk[2] && chunk[0] != chunk[1] {
-			// fmt.Println(chunk)
 			return true
 		} else {
 			continue
@@ -72,12 +71,10 @@ func partTwo(lines []string) {
 	counter := 0
 	nice := true
 	for _, line := range lines {
-		nice = dupCheck(line)
-		// if nice {
+		// nice = dupCheck(line)
 		// nice = tripCheck(line)
-		// }
-		// if dupCheck(line) && tripCheck(line) {
-		if nice {
+		if dupCheck(line) && tripCheck(line) { // real check
+			// if nice {
 			counter++
 			fmt.Println(line, nice)
 		}
