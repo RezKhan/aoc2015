@@ -54,6 +54,23 @@ func dupCheck(line string) bool {
 	return false
 }
 
+func dupCheck2(line string) bool {
+	for i := 0; i < len(line)-1; i++ { // len-1 because the chunk is +1
+		chunk := line[i : i+2]
+		reChunk := regexp.MustCompile(chunk)
+		if len(reChunk.FindAllString(line, 2)) > 1 {
+			chunkidx := reChunk.FindAllStringIndex(line, 2)
+			tripidx := tripCheckIdx(line)
+			if chunkidx[0][0] <= tripidx && chunkidx[1][0] >= tripidx {
+				return true
+			}
+		} else {
+			continue
+		}
+	}
+	return false
+}
+
 func tripCheck(line string) bool {
 	for i := 3; i < len(line); i++ {
 		chunk := line[i-3 : i]
@@ -66,6 +83,18 @@ func tripCheck(line string) bool {
 	return false
 }
 
+func tripCheckIdx(line string) int {
+	for i := 3; i < len(line); i++ {
+		chunk := line[i-3 : i]
+		if chunk[0] == chunk[2] {
+			return i - 3
+		} else {
+			continue
+		}
+	}
+	return -1
+}
+
 func partTwo(lines []string) {
 	// this one seems to want to do sliding windows
 	counter := 0
@@ -73,7 +102,8 @@ func partTwo(lines []string) {
 	for _, line := range lines {
 		// nice = dupCheck(line)
 		// nice = tripCheck(line)
-		if dupCheck(line) && tripCheck(line) { // real check
+		// if dupCheck(line) && tripCheck(line) { // real check
+		if dupCheck2(line) {
 			// if nice {
 			counter++
 			fmt.Println(line, nice)
