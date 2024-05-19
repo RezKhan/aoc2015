@@ -9,7 +9,7 @@ import (
 
 func partOne(lines []string) {
 	// nice: regex for vowels (a|e|i|o|u) || regex for 2 or more ([a-z])\1{1,}
-	reVowels := regexp.MustCompile(`(a|e|i|o|u)`)
+	reVowels := regexp.MustCompile(`(aeiou)`)
 	// CURRENTLY UNSUPPORTED IN GO: reDoubles := regexp.MustCompile(`([a-z])\1{1,}`)
 	// naughty: just do as array and strings.index ["ab", "cd", "pq", "xy"]
 	naughtystrings := []string{"ab", "cd", "pq", "xy"}
@@ -57,7 +57,7 @@ func dupCheck(line string) bool {
 func tripCheck(line string) bool {
 	for i := 3; i < len(line); i++ {
 		chunk := line[i-3 : i]
-		if chunk[0] == chunk[2] && chunk[0] != chunk[1] {
+		if chunk[0] == chunk[2] {
 			return true
 		} else {
 			continue
