@@ -9,7 +9,7 @@ import (
 
 func partOne(lines []string) {
 	// nice: regex for vowels (a|e|i|o|u) || regex for 2 or more ([a-z])\1{1,}
-	reVowels := regexp.MustCompile(`(aeiou)`)
+	reVowels := regexp.MustCompile(`(a|e|i|o|u)`)
 	// CURRENTLY UNSUPPORTED IN GO: reDoubles := regexp.MustCompile(`([a-z])\1{1,}`)
 	// naughty: just do as array and strings.index ["ab", "cd", "pq", "xy"]
 	naughtystrings := []string{"ab", "cd", "pq", "xy"}
@@ -47,24 +47,6 @@ func dupCheck(line string) bool {
 		if len(reChunk.FindAllString(line, 2)) > 1 {
 			return true
 		} else {
-			// fmt.Println(chunk)
-			continue
-		}
-	}
-	return false
-}
-
-func dupCheck2(line string) bool {
-	for i := 0; i < len(line)-1; i++ { // len-1 because the chunk is +1
-		chunk := line[i : i+2]
-		reChunk := regexp.MustCompile(chunk)
-		if len(reChunk.FindAllString(line, 2)) > 1 {
-			chunkidx := reChunk.FindAllStringIndex(line, 2)
-			tripidx := tripCheckIdx(line)
-			if chunkidx[0][0] <= tripidx && chunkidx[1][0] >= tripidx {
-				return true
-			}
-		} else {
 			continue
 		}
 	}
@@ -72,8 +54,8 @@ func dupCheck2(line string) bool {
 }
 
 func tripCheck(line string) bool {
-	for i := 3; i < len(line); i++ {
-		chunk := line[i-3 : i]
+	for i := 0; i < len(line)-2; i++ {
+		chunk := line[i : i+3]
 		if chunk[0] == chunk[2] {
 			return true
 		} else {
@@ -83,30 +65,13 @@ func tripCheck(line string) bool {
 	return false
 }
 
-func tripCheckIdx(line string) int {
-	for i := 3; i < len(line); i++ {
-		chunk := line[i-3 : i]
-		if chunk[0] == chunk[2] {
-			return i - 3
-		} else {
-			continue
-		}
-	}
-	return -1
-}
-
 func partTwo(lines []string) {
 	// this one seems to want to do sliding windows
 	counter := 0
-	nice := true
+	// nice := true
 	for _, line := range lines {
-		// nice = dupCheck(line)
-		// nice = tripCheck(line)
-		// if dupCheck(line) && tripCheck(line) { // real check
-		if dupCheck2(line) {
-			// if nice {
+		if dupCheck(line) && tripCheck(line) { // real check
 			counter++
-			fmt.Println(line, nice)
 		}
 	}
 	fmt.Println("P2 Nice strings: ", counter)
@@ -116,6 +81,7 @@ func main() {
 	// lines := rf.ReadFile("test.txt")
 	// lines := rf.ReadFile("test2.txt")
 	lines := rf.ReadFile("input.txt")
+	// lines := rf.ReadFile("input69.txt")
 	partOne(lines)
 	partTwo(lines)
 }
