@@ -6,5 +6,7 @@ use (
 	./cmd/d03
 	./cmd/d04
 	./cmd/d05
+	./cmd/d06
+	./cmd/d07
 	./pkg/readfile
 )
