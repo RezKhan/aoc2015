@@ -13,8 +13,9 @@ type Coords struct {
 }
 
 type Light struct {
-	on     bool
-	coords Coords
+	on         bool
+	brightness int
+	coords     Coords
 }
 
 type Command struct {
@@ -28,7 +29,7 @@ func setupGrid() [][]Light {
 	for i := 0; i < 1000; i++ {
 		var lightLine []Light
 		for j := 0; j < 1000; j++ {
-			light := Light{false, Coords{j, i}}
+			light := Light{false, 0, Coords{j, i}}
 			lightLine = append(lightLine, light)
 		}
 		lightGrid = append(lightGrid, lightLine)
@@ -36,34 +37,36 @@ func setupGrid() [][]Light {
 	return lightGrid
 }
 
+func parseLineToCommand(line string) Command {
+	tstr := strings.Split(strings.ReplaceAll(line, " ", ","), ",")
+	if tstr[0] == "turn" {
+		tstr = tstr[1:]
+	}
+	var cmd Command
+	cmd.command = tstr[0]
+	cmd.startRange.x, _ = strconv.Atoi(tstr[1])
+	cmd.startRange.y, _ = strconv.Atoi(tstr[2])
+	cmd.endRange.x, _ = strconv.Atoi(tstr[4])
+	cmd.endRange.y, _ = strconv.Atoi(tstr[5])
+
+	return cmd
+}
+
 func partOne(lines []string) {
 	lightGrid := setupGrid()
 	for _, line := range lines {
 		// tstr := string(line[:strings.LastIndex(line[:strings.Index(line, ",")], " ")])
 		// tstr := strings.Split(line[strings.LastIndex(line[:strings.Index(line, ",")], " ")+1:], " ")
-		tstr := strings.Split(line, " ")
-		if tstr[0] == "turn" {
-			// _, tstr = tstr[0], tstr[1:]
-			tstr = tstr[1:]
-		}
-		fmt.Println(len(tstr), tstr)
-		var tcmd Command
-		tcmd.command = tstr[0]
-		start := strings.Split(tstr[1], ",")
-		end := strings.Split(tstr[3], ",")
-		tcmd.startRange.x, _ = strconv.Atoi(start[0])
-		tcmd.startRange.y, _ = strconv.Atoi(start[1])
-		tcmd.endRange.x, _ = strconv.Atoi(end[0])
-		tcmd.endRange.y, _ = strconv.Atoi(end[1])
-		for y := tcmd.startRange.y; y <= tcmd.endRange.y; y++ {
-			for x := tcmd.startRange.x; x <= tcmd.endRange.x; x++ {
-				if tcmd.command == "on" {
+		cmd := parseLineToCommand(line)
+		for y := cmd.startRange.y; y <= cmd.endRange.y; y++ {
+			for x := cmd.startRange.x; x <= cmd.endRange.x; x++ {
+				if cmd.command == "on" {
 					lightGrid[y][x].on = true
 				}
-				if tcmd.command == "off" {
+				if cmd.command == "off" {
 					lightGrid[y][x].on = false
 				}
-				if tcmd.command == "toggle" {
+				if cmd.command == "toggle" {
 					lightGrid[y][x].on = !lightGrid[y][x].on
 				}
 			}
@@ -80,8 +83,37 @@ func partOne(lines []string) {
 	fmt.Println(counter)
 }
 
+func partTwo(lines []string) {
+	lightGrid := setupGrid()
+	for _, line := range lines {
+		cmd := parseLineToCommand(line)
+		for y := cmd.startRange.y; y <= cmd.endRange.y; y++ {
+			for x := cmd.startRange.x; x <= cmd.endRange.x; x++ {
+				if cmd.command == "on" {
+					lightGrid[y][x].brightness++
+				}
+				if cmd.command == "off" && lightGrid[y][x].brightness > 0 {
+					lightGrid[y][x].brightness--
+				}
+				if cmd.command == "toggle" {
+					lightGrid[y][x].brightness += 2
+				}
+			}
+		}
+	}
+	totalBrightness := 0
+	for _, lline := range lightGrid {
+		for _, light := range lline {
+			totalBrightness += light.brightness
+		}
+	}
+	fmt.Println(totalBrightness)
+}
+
 func main() {
 	// lines := rf.ReadFile("test.txt")
+	// lines := rf.ReadFile("test2.txt")
 	lines := rf.ReadFile("input.txt")
 	partOne(lines)
+	partTwo(lines)
 }
