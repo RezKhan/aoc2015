@@ -2,24 +2,59 @@ package main
 
 import (
 	"fmt"
+	"log"
 	rf "readfile"
 	"strconv"
 	"strings"
 )
 
-func parseCommandsIntoSignals(cmd map[string]string, signals map[string]int) {
-	// fmt.Println("elements in map: ", len(cmd))
-	for k, str := range cmd {
-		// fmt.Println(k, str, len(strings.Split(str, " ")))
-		if len(strings.Split(str, " ")) == 1 {
-			n, err := strconv.Atoi(str)
-			if err != nil {
-				continue
-			}
-			signals[k] = n
+func parseCommandsIntoSignals(cmd map[string]string, target string, signals map[string]int) map[string]int {
+	fmt.Println(target, cmd[target])
+	strcmd := strings.Split(cmd[target], " ")
+	// BASE CASE
+	if len(strcmd) == 1 {
+		n, err := strconv.Atoi(strcmd[0])
+		if err != nil {
+			return nil
 		}
+		signals[target] = n
+		return signals
 	}
-	fmt.Println(signals)
+	// SHIFT OPERATION:
+	if len(strcmd) == 3 && strings.Contains(strcmd[1], "SHIFT") {
+		// Handle shift operation
+		// Check if the value to be shifted is already populated
+		if v, ok := signals[strcmd[0]]; ok {
+			log.Println("v, ok:", v, ok)
+			shiftval, err := strconv.Atoi(strcmd[2])
+			log.Println(shiftval)
+			if err != nil {
+				log.Fatalln(err, "Shift value could not be determined")
+			}
+			if strcmd[1] == "LSHIFT" {
+				fmt.Println("Shifting", signals[strcmd[0]], "left")
+				signals[target] = signals[strcmd[0]] >> shiftval
+			}
+			if strcmd[1] == "RSHIFT" {
+				fmt.Println("Shifting", signals[strcmd[0]], "right")
+				signals[target] = signals[strcmd[0]] << shiftval
+			}
+			fmt.Println(v)
+		} else {
+			// RECURSIVE CASE
+			fmt.Println("v not found")
+			signals = parseCommandsIntoSignals(cmd, strcmd[0], signals)
+		}
+		return signals
+	}
+	// AND | OR OPERATION
+	if len(strcmd) == 3 && !strings.Contains(strcmd[1], "SHIFT") {
+	}
+	// NOT OPERATION
+	if len(strcmd) == 2 {
+
+	}
+	return signals
 }
 
 func partOne(lines []string) {
@@ -30,10 +65,10 @@ func partOne(lines []string) {
 		tsource := strings.TrimRight(tline[0], " ")
 		destination := strings.TrimSpace(tline[1])
 		commands[destination] = tsource
-		// fmt.Println(len(tsource), tsource, destination)
 	}
-	// target := "e"
-	parseCommandsIntoSignals(commands, signals)
+	target := "f"
+	signals = parseCommandsIntoSignals(commands, target, signals)
+	fmt.Println(signals)
 }
 
 func main() {
