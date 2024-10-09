@@ -7,93 +7,81 @@ import (
 	"strings"
 )
 
-func parseCommandsIntoSignals(cmd map[string]string, target string, signals map[string]uint16) map[string]uint16 {
-	fmt.Println("Entering target: ", target, "=", cmd[target])
-	if target == "" {
-		fmt.Println("You broke it")
-		return nil
+func valueLeftRight(operations map[string]string, operation string, signals map[string]uint16) uint16 {
+	t, err := strconv.Atoi(operation)
+	if err != nil {
+		_, ok := signals[operation]
+		if !ok {
+			signals = parseOperationsIntoSignals(operations, operation, signals)
+		}
+		return signals[operation]
+	} else {
+		return uint16(t)
 	}
-	strcmd := strings.Split(cmd[target], " ")
-	// fmt.Println(len(strcmd), strcmd[0])
+}
 
-	cmd0, cerr := strconv.Atoi(strcmd[0])
+func parseOperationsIntoSignals(operations map[string]string, target string, signals map[string]uint16) map[string]uint16 {
+	operation := strings.Split(operations[target], " ")
+	fmt.Println(operations[target], " to ", target)
 	// BASE CASE
-	if len(strcmd) == 1 && cerr == nil {
-		signals[target] = uint16(cmd0)
-		return signals
+	if len(operation) == 1 {
+		tmp, err := strconv.Atoi(operation[0])
+		if err != nil {
+			// fmt.Println(err)
+			signals = parseOperationsIntoSignals(operations, operation[0], signals)
+			return signals
+		}
+		signals[target] = uint16(tmp)
 	}
 	// RECURSIVE CASES
-	// The LEFT or RIGHT side may contain a number, and this needs to be checked for
-	// Check if key exists in signals if not, go recursive
-	if strcmd[0] != "NOT" && cerr != nil { // adding this nil check lets it get passed a couple of cases
-		// needs more work
-		_, ok := signals[target]
-		if !ok {
-			signals = parseCommandsIntoSignals(cmd, strcmd[0], signals)
+	if len(operation) == 2 {
+		if operation[0] == "NOT" {
+			_, ok := signals[operation[1]]
+			if !ok {
+				signals = parseOperationsIntoSignals(operations, operation[1], signals)
+			}
+			x := uint16(signals[operation[1]])
+			signals[target] = ^x
 		}
 	}
 
-	if strcmd[0] == "NOT" {
-		_, ok := signals[strcmd[1]]
-		if !ok {
-			signals = parseCommandsIntoSignals(cmd, strcmd[1], signals)
+	if len(operation) == 3 {
+		// LEFT or RIGHT side can be a number, check for both and assign
+		left := valueLeftRight(operations, operation[0], signals)
+		right := valueLeftRight(operations, operation[2], signals)
+		switch operation[1] {
+		case "AND":
+			signals[target] = left & right
+			break
+		case "OR":
+			signals[target] = left | right
+			break
+		case "LSHIFT":
+			signals[target] = left << right
+			break
+		case "RSHIFT":
+			signals[target] = left >> right
 		}
-	}
-
-	if strcmd[1] == "AND" || strcmd[1] == "OR" {
-		_, ok := signals[strcmd[2]]
-		if !ok {
-			signals = parseCommandsIntoSignals(cmd, strcmd[2], signals)
-		}
-	}
-
-	// ASSIGN SIGNALS TO WIRES
-	num := 0
-	if len(strcmd) == 3 && strcmd[1] == "SHIFT" {
-		n, err := strconv.Atoi(strcmd[2])
-		if err != nil {
-			fmt.Println(err)
-			return nil
-		}
-		num = n
-	}
-	if strcmd[1] == "LSHIFT" {
-		signals[target] = signals[strcmd[0]] << num
-		return signals
-	}
-	if strcmd[1] == "RSHIFT" {
-		signals[target] = signals[strcmd[0]] >> num
-		return signals
-	}
-	if strcmd[1] == "AND" {
-		signals[target] = signals[strcmd[0]] & signals[strcmd[2]]
-		return signals
-	}
-	if strcmd[1] == "OR" {
-		signals[target] = signals[strcmd[0]] | signals[strcmd[2]]
-	}
-	if strcmd[0] == "NOT" {
-		x := uint16(signals[strcmd[1]])
-		signals[target] = ^x
-		return signals
 	}
 	return signals
 }
 
 func partOne(lines []string) {
 	signals := make(map[string]uint16)
-	commands := make(map[string]string)
+	operations := make(map[string]string)
 	for _, line := range lines {
-		tline := strings.Split(line, "->")
-		tsource := strings.TrimRight(tline[0], " ")
-		destination := strings.TrimSpace(tline[1])
-		commands[destination] = tsource
+		tmpline := strings.Split(line, "->")
+		tsource := strings.TrimRight(tmpline[0], " ")
+		destination := strings.TrimSpace(tmpline[1])
+		operations[destination] = tsource
+	}
+	for k := range operations {
+		signals = parseOperationsIntoSignals(operations, k, signals)
 	}
 	target := "a"
-	// for k, v := range commands {
-	// 	fmt.Println("command:", k, " - has value: ", v)
-	// }
-	signals = parseCommandsIntoSignals(commands, target, signals)
+	for k, v := range signals {
+		fmt.Println(k, ": ", v)
+	}
 	fmt.Println("Target value for:", target, " = ", signals[target])
 }
 
